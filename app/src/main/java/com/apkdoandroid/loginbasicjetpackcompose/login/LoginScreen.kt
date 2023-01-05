@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -29,15 +30,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.apkdoandroid.loginbasicjetpackcompose.login.LoginViewModel
 import java.util.regex.Pattern
 
 @Composable
-fun loginScreen(){
+fun loginScreen( loginViewModel: LoginViewModel){
     Box(modifier = Modifier
         .fillMaxSize()
         .padding(8.dp)){
         header(Modifier.align(Alignment.TopEnd))
-        body(Modifier.align(Alignment.Center))
+        body(Modifier.align(Alignment.Center), loginViewModel)
         foorter(Modifier.align(Alignment.BottomCenter))
     }
 }
@@ -71,22 +73,25 @@ fun singUp() {
 }
 
 @Composable
-fun body(modifier: Modifier) {
-    var email by rememberSaveable{ mutableStateOf("") }
-    var password by rememberSaveable{ mutableStateOf("")}
-    var habilitarLogin by rememberSaveable{ mutableStateOf(false)}
+fun body(modifier: Modifier, loginViewModel: LoginViewModel) {
+    val email : String by loginViewModel.email.observeAsState(initial = "")
+  //  var email by rememberSaveable{ mutableStateOf("") }
+   // var password by rememberSaveable{ mutableStateOf("")}
+    val password : String by loginViewModel.passWord.observeAsState(initial = "")
+    val habilitarLogin : Boolean by loginViewModel.isLoginEnable.observeAsState(initial = false)
+  //  var habilitarLogin by rememberSaveable{ mutableStateOf(false)}
 
     Column(modifier = modifier) {
         imagemLogo(Modifier.align(Alignment.CenterHorizontally))
         Spacer(modifier = Modifier.size(16.dp))
         email(email, {
-            email = it
-            habilitarLogin =   enableLogin(email, password)
+            loginViewModel.onLoginChange(emailL = it, password = password)
+           // habilitarLogin =   enableLogin(email, password)
         })
         Spacer(modifier = Modifier.size(4.dp))
         password(password) {
-            password = it
-            habilitarLogin =   enableLogin(email, password)
+            loginViewModel.onLoginChange(emailL = email, password = it)
+          //      habilitarLogin =   enableLogin(email, password)
         }
         Spacer(modifier = Modifier.size(8.dp))
         recuperarSenha(Modifier.align(Alignment.End))
@@ -246,6 +251,4 @@ fun header(modifier: Modifier){
         contentDescription = "close app",
         modifier = modifier.clickable { activity.finish() })
 }
-
-fun enableLogin(email : String , password : String) =  Patterns.EMAIL_ADDRESS.matcher(email).matches() && password.length > 6
 
